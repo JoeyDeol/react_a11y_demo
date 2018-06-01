@@ -8,6 +8,9 @@ class Modal extends Component {
   constructor(props) {
     super(props);
 
+    this.firstInteractiveElement = React.createRef();
+    this.lastInteractiveElement = React.createRef();
+
     this.handleTabKeyPress = this.handleTabKeyPress.bind(this);
     this.handleShiftTabKeyPress = this.handleShiftTabKeyPress.bind(this);
     this.closeOnEscape = this.closeOnEscape.bind(this);
@@ -19,6 +22,8 @@ class Modal extends Component {
   componentDidUpdate() {
     if (this.props.isVisible) {
       document.body.classList.add('no-scroll');
+
+      this.firstInteractiveElement.current.focus();
     }
   }
 
@@ -35,11 +40,29 @@ class Modal extends Component {
   }
 
   handleTabKeyPress(evt) {
+    const pressedTabKey = evt.keyCode === TAB_KEY;
+    // const didNotPressShiftKey = evt.nativeEvent.shiftKey === false;
+    const didNotPressShiftKey = !evt.nativeEvent.shiftKey;
 
+    const focusFirstInteractiveElement = pressedTabKey && didNotPressShiftKey;
+
+    if (focusFirstInteractiveElement) {
+      evt.preventDefault();
+      this.firstInteractiveElement.current.focus();
+    }
   }
 
   handleShiftTabKeyPress(evt) {
+    const pressedTabKey = evt.keyCode === TAB_KEY;
+    // const pressedShiftKey = evt.nativeEvent.shiftKey === true;
+    const pressedShiftKey = evt.nativeEvent.shiftKey;
 
+    const focusLastInteractiveElement = pressedTabKey && pressedShiftKey;
+
+    if (focusLastInteractiveElement) {
+      evt.preventDefault();
+      this.lastInteractiveElement.current.focus();
+    }
   }
 
   render() {
@@ -62,6 +85,7 @@ class Modal extends Component {
           <div className="modal__header">
             <h2 id="ModalHeader">Register for a class</h2>
             <button
+              ref={this.firstInteractiveElement}
               className="button button--icon"
               onClick={this.closeModal}
               onKeyDown={this.handleShiftTabKeyPress}
@@ -76,6 +100,7 @@ class Modal extends Component {
               className="button button--primary"
             >Confirm</button>
             <button
+              ref={this.lastInteractiveElement}
               className="button"
               onKeyDown={this.handleTabKeyPress}
               onClick={this.closeModal}
